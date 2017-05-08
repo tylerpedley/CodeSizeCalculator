@@ -10,6 +10,8 @@ namespace Code_Size_Calculator
     {
         private StreamReader FileUploadStream;
 
+        delegate void SetFileUploadStatusCallback(string status);
+
         public CodeSizeCalculatorForm()
         {
             InitializeComponent();
@@ -18,6 +20,19 @@ namespace Code_Size_Calculator
         ~CodeSizeCalculatorForm()
         {
             FileUploadStream.Close();
+        }
+
+        private void SetFileUploadStatus(string status)
+        {
+            if (this.FileUploadProgress.InvokeRequired)
+            {
+                SetFileUploadStatusCallback d = new SetFileUploadStatusCallback(SetFileUploadStatus);
+                this.Invoke(d, new object[] { status });
+            }
+            else
+            {
+                this.FileUploadProgress.Text = status;
+            }
         }
 
         private async void UploadFileButton_Click(object sender, EventArgs e)
@@ -36,7 +51,9 @@ namespace Code_Size_Calculator
 
         private string CalculateCodeSize()
         {
+            SetFileUploadStatus("Calculating Code Size");
             var fileContents = FileUploadStream.ReadToEnd();
+            SetFileUploadStatus("Done");
 
             return fileContents;
         }
